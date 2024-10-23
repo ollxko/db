@@ -1,19 +1,24 @@
 using System;
 using System.Linq;
 using Game.Domain;
+using MongoDB.Driver;
 
 namespace ConsoleApp
 {
     class Program
     {
-        private readonly IUserRepository userRepo;
-        private readonly IGameRepository gameRepo;
+        private readonly MongoUserRepository userRepo;
+        private readonly MongoGameRepository gameRepo;
         private readonly Random random = new Random();
 
         private Program(string[] args)
         {
-            userRepo = new InMemoryUserRepository();
-            gameRepo = new InMemoryGameRepository();
+            var mongoConnectionString = Environment.GetEnvironmentVariable("PROJECT5100_MONGO_CONNECTION_STRING")
+                                        ?? "mongodb://localhost:27017?maxConnecting=100";
+            var mongoClient = new MongoClient(mongoConnectionString);
+            var dataBase = mongoClient.GetDatabase("game-tests");
+            userRepo = new MongoUserRepository(dataBase);
+            gameRepo = new MongoGameRepository(dataBase);
         }
 
         public static void Main(string[] args)
